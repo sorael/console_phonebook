@@ -37,7 +37,6 @@ def menu():
 
 
 def create_contact():
-    # TODO: add contact with non latin symbols
     print("If contact does not have some attribute, type '-'.")
     firstname, lastname = get_name()
     phone1 = input("Phone 1: ")
@@ -47,8 +46,8 @@ def create_contact():
     l = [contact.firstname, contact.lastname]
     file_name = "_".join(l)
     file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "json_imported_files/%s.json" % file_name)
-    with open(file, "w", encoding="utf-8") as f:
-        f.write(json.dumps(contact, default=lambda x: x.__dict__, indent=2, sort_keys=True))
+    with open(file, "w") as f:
+        f.write(json.dumps(contact, default=lambda x: x.__dict__, indent=2, sort_keys=True, ensure_ascii=False))
 
 
 def delete_contact():
@@ -58,23 +57,33 @@ def delete_contact():
 
 
 def search_by_name():
-    file_name = get_file_name()
-    file = get_file(file_name)
-    f = open(file, "r")
-    data = json.load(f)
-    if not data:
-        print("Contact with that name is not found in address book.")
-    else:
-        print("-----------------")
-        print("first name: " + str(data["firstname"]))
-        print("last name: " + str(data["lastname"]))
-        print("phone number 1: " + str(data["phone1"]))
-        print("phone number 2: " + str(data["phone2"]))
-        print("phone number 3: " + str(data["phone3"]))
+    files = glob.glob("json_imported_files/*.json")
+    file_to_delete = ""
+    firstname, lastname = get_name()
+    for i in files:
+        with open(i, "r") as f:
+            for line in f:
+                if firstname in line:
+                    for j in f:
+                        if lastname in j:
+                            file = open(i, "r")
+                            file_to_delete = i
+                            data = json.load(file)
+                            print("-----------------")
+                            print("first name: " + str(data["firstname"]))
+                            print("last name: " + str(data["lastname"]))
+                            print("phone number 1: " + str(data["phone1"]))
+                            print("phone number 2: " + str(data["phone2"]))
+                            print("phone number 3: " + str(data["phone3"]))
+                            file.close()
+    uss = input("\nDo you want to delete this contact? (y/n): ")
+    if uss.lower() == "y":
+        os.remove(file_to_delete)
+        print("Deleted.")
 
 
 def search_by_phone():
-    files = glob.glob("json_imported_files/*.*")
+    files = glob.glob("json_imported_files/*.json")
     phone = input("Phone: ")
     for i in files:
         with open(i, "r") as f:
